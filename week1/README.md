@@ -1,6 +1,17 @@
-## Week 1: Inveter Pre-layout & Post-layout characterization:
+# Week 1: Inveter Pre-layout & Post-layout characterization:
 
-#Simulation of CMOS Inverter using Xschem and Ngspice
+Contents
+
+Sr. No | Topic | Description | Status |
+---|---|---|---|
+1 | Inverter| Pre-layout| :heavey_check_mark:|
+  |   |   |   |  |
+  |   |   |   |  |
+  |   |   |   |  |
+  |   |   |   |  |
+  |   |   |   |  |
+
+## Simulation of CMOS Inverter using Xschem and Ngspice
 
 launch `Xschem` in the chosen dir:
 ```
