@@ -49,3 +49,58 @@ following window opens
 ![post layout transient](https://user-images.githubusercontent.com/94752269/218552771-f0a1fadf-2226-434c-9ea3-aa4b850f2599.png)
 
 
+## Generating GDS file using ALIGN
+
+input- netlist exported from xschem
+output- INVERTER_0.gds
+        INVERTER_0.python.gds
+
+![terminal screenshot](week1/pictures/gds inverter.png "ALIGN")
+
+```
+* SPICE3 file created from INVERTER.ext - technology: sky130A
+.lib /usr/local/share/pdk/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.option scale=5000u
+
+inv1 A Y Vpwr Vgnd inverter
+
+.subckt inverter A Y Vpwr Vgnd
+X0 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=117600 pd=4760 as=138600 ps=5700 w=420 l=30
+X1 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X2 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X3 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X4 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X5 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=138600 pd=5700 as=117600 ps=4760 w=420 l=30
+X6 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X7 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X8 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X9 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X10 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X11 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X12 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X13 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X14 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X15 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X16 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X17 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X18 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X19 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+C0 Vpwr Y 2.60fF
+C1 Vpwr A 4.03fF
+C2 A Y 1.21fF
+C3 A Vgnd 3.26fF **FLOATING
+C4 Y Vgnd 2.98fF **FLOATING
+C5 Vpwr Vgnd 5.22fF **FLOATING
+.ends
+
+*set Vpwr and Vgnd
+Vss Vgnd 0 0
+Vdd Vpwr Vgnd 1.8
+
+*create pulse 
+Vin A Vgnd pulse(0 1.8 1ns 1ns 1ns 4ns 10ns)
+
+.tran 0.01n 60n
+.save all
+.end
+```
