@@ -4,7 +4,7 @@ Contents
 
 Sr. No | Topic | Description | Status |
 ---|---|---|---|
-1 | Inverter| Pre-layout| :heavey_check_mark:|
+1 | Inverter| Pre-layout| :heavy_check_mark:|
   |   |   |   |  |
   |   |   |   |  |
   |   |   |   |  |
