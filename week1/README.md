@@ -55,6 +55,15 @@ input- netlist exported from xschem
 output- INVERTER_0.gds
         INVERTER_0.python.gds
 
+install KLayout
+
+```
+sudo apt-get install qttools5-dev libqt5xmlpatterns5-dev qtmultimedia5-dev libqt5multimediawidgets5 libqt5svg5-dev
+git clone https://github.com/KLayout/klayout
+cd klayout/
+./build.sh -prefix /usr/bin
+```
+
 ![terminal screenshot](week1/pictures/gds inverter.png "ALIGN")
 
 ```
