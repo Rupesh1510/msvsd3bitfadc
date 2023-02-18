@@ -1,62 +1,67 @@
-# Week 1: Inveter Pre-layout & Post-layout characterization:
+# Week 1: Pre-layout & Post-layout characterization:
 
 Contents
 
 Sr. No | Topic | Description | Status |
 ---|---|---|---|
-1 | Inverter| Pre-layout| :heavy_check_mark:|
-  |   |   |   |  |
-  |   |   |   |  |
-  |   |   |   |  |
-  |   |   |   |  |
-  |   |   |   |  |
+1 | Inverter: schem2gds| Generating GDS file using ALIGN| :heavy_check_mark:|
+2 | Inverter: Post-layout  | Post-layout characterisation using Magic & ngspice  |  :heavy_check_mark: |  |
+3 | Inverter: Pre vs Post layout characterisation | Comparision of Pre vs Post layout characterisation  |   |  |
+4 | Fn: schem2gds  | generating GDS file using ALIGN  | :heavy_check_mark:  |  
+5 | Fn: Post-layout  | Post-layout characterisation using Magic & ngspice |  |
+6 | Fn: Pre vs Post layout characterisation  | Comparision of Pre vs Post layout characterisation   |   |  
 
-## Simulation of CMOS Inverter using Xschem and Ngspice
-
-launch `Xschem` in the chosen dir:
-```
-rupesh@rupesh:~/work/lab_inv/xschem$ xschem
-```
-following window opens
-
-![image](https://user-images.githubusercontent.com/94752269/218549570-dd1b429b-3f39-423c-83a2-35c4408aa1e3.png)
-
-1. Pre-layout characterization in Xschem and ngspice
-  1. DC transfer function analysis
-  ![inv_VTC 2](https://user-images.githubusercontent.com/94752269/218339465-58f6708d-e84e-4170-8f98-3cb4fc373bf3.png)
-  
-  ![inv VTC analysis](https://user-images.githubusercontent.com/94752269/218339467-4764799b-4ba5-4be3-8d0f-0e3872e1efa6.png)
-  
-  ![vin vs vout dc](https://user-images.githubusercontent.com/94752269/218339476-f5e02283-485b-4556-8917-b878bbda7b30.png)
-  
-  2. Transient Analysis
-   ![inv_transient_analysis ](https://user-images.githubusercontent.com/94752269/218339460-65ea48d1-3a83-438f-a2a8-8d44b352cc4b.png)
-   
-   ![inv_transient_analysis_wave](https://user-images.githubusercontent.com/94752269/218339462-cf4d5cae-20a6-4453-b304-4bc9d3fcf9b0.png)
-   
-2. Post-layout characterization in Magic
-![myinv_magic](https://user-images.githubusercontent.com/94752269/218339474-2f9cea90-48af-4fd3-ad22-77a8d5d7dff6.png)
-
-![my_inv2](https://user-images.githubusercontent.com/94752269/218339471-0ecc5ee0-b322-4ad5-87d6-2690e1a558d6.png)
-
-  1. DC transfer function analysis
-  
-![post_layout dc](https://user-images.githubusercontent.com/94752269/218552649-b6b889de-7450-4bcd-bb45-4261f720a4ba.png)
-
- 
-  2. Transient Analysis
-
-![post layout transient](https://user-images.githubusercontent.com/94752269/218552771-f0a1fadf-2226-434c-9ea3-aa4b850f2599.png)
-
-
-## Generating GDS file using ALIGN
+## 1. Generating GDS file using ALIGN
 
 input- netlist exported from xschem
 output- INVERTER_0.gds
         INVERTER_0.python.gds
 
-install KLayout
+![xschem inverter](/week1/images/inv%20xschem.png "xschem inv")
 
+````
+** sch_path: /home/rupesh/work/lab_inv/xschem/inv.sch
+**.subckt inv
+XM1 vout vin GND GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM2 vout vin VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+v2 VDD GND 1.8
+.save i(v2)
+v1 vin GND pulse(0 1.8 1ns 1ns 1ns 4ns 10ns)
+.save i(v1)
+**** begin user architecture code
+
+.tran 0.01n 60n
+.save all
+
+.lib /usr/local/share/pdk/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+
+
+**** end user architecture code
+**.ends
+.GLOBAL GND
+.GLOBAL VDD
+.end
+````
+
+need to make some changes in the spice file to genterate GDS like `change extension to .sp`
+
+```
+** sch_path: /home/rupesh/work/lab_inv/xschem/inv.sch
+
+.subckt inverter vout vin VDD GND
+
+XM1 vout vin GND GND sky130_fd_pr__nfet_01v8 L=0.15 W=21e-7 nf=10 m=1
+XM2 vout vin VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=21e-7 nf=10 m=1
+
+.GLOBAL GND
+.GLOBAL VDD
+.end
+```
+install KLayout (optional)
 ```
 sudo apt-get install qttools5-dev libqt5xmlpatterns5-dev qtmultimedia5-dev libqt5multimediawidgets5 libqt5svg5-dev
 git clone https://github.com/KLayout/klayout
@@ -64,14 +69,78 @@ cd klayout/
 ./build.sh -prefix /usr/bin
 ```
 
-![terminal screenshot](week1/pictures/gds inverter.png "ALIGN")
+to convert schematic to GDS we will use ALIGN with sky130pdk. every time we use ALIGN we need to activate python environment by following 
+```
+source ~/work/ALIGN-public/general/bin/activate
+```
+
+Then use following command to run schematic2gds generation
 
 ```
-* SPICE3 file created from INVERTER.ext - technology: sky130A
+schematic2layout.py ../inverter -p ../pdks/ALIGN-pdk-sky130/SKY130_PDK
+```
+
+![terminal screenshot schem2gds](/week1/images/gds%20inverter.png "ALIGN")
+
+## 2. POst-layout characterisation using Magic & ALIGN 
+after that the gds files get generated by the name *INVERTER_0.gds* and *INVERTER_0.python.gds*
+
+launch magic by
+```
+magic -d OGL -T ~/work/open_pdks/sky130/sky130A/libs.tech/magic/sky130A.tech &
+```
+
+*INVERTER_0.python.gds* can be opened using Magic or KLayout by *file>>read gds* in magic
+
+![magic layout from GDS inverter](/week1/images/magiclayoutfromgds.png)
+
+This layout opens up. We need to assign labels to all the ports if labels are not preset
+
+export post layout netlist from magic by
+```
+extract all
+ext2spice cthresh 0 rthresh 0
+ext2spice
+```
+This is the netlist file exported by magic 
+```
+X0 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=117600 pd=4760 as=138600 ps=5700 w=420 l=30
+X1 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X2 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X3 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X4 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X5 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=138600 pd=5700 as=117600 ps=4760 w=420 l=30
+X6 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X7 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X8 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X9 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X10 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X11 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X12 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X13 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X14 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X15 A Y Vpwr Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X16 Vpwr Y A Vpwr sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X17 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X18 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X19 Vgnd Y A Vgnd sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+C0 Vpwr Y 2.60fF
+C1 Vpwr A 4.03fF
+C2 A Y 1.21fF
+C3 A Vgnd 3.26fF **FLOATING
+C4 Y Vgnd 2.98fF **FLOATING
+C5 Vpwr Vgnd 5.22fF **FLOATING
+
+```
+
+This netlist is then needed to simulate in the ngspice by adding simulation code
+
+```
+*SPICE3 file created from INVERTER.ext - technology: sky130A
 .lib /usr/local/share/pdk/sky130A/libs.tech/ngspice/sky130.lib.spice tt
 .option scale=5000u
 
-inv1 A Y Vpwr Vgnd inverter
+*inv1 A Y Vpwr Vgnd inverter
 
 .subckt inverter A Y Vpwr Vgnd
 X0 A Y Vgnd Vgnd sky130_fd_pr__nfet_01v8 ad=117600 pd=4760 as=138600 ps=5700 w=420 l=30
@@ -113,3 +182,405 @@ Vin A Vgnd pulse(0 1.8 1ns 1ns 1ns 4ns 10ns)
 .save all
 .end
 ```
+
+![post layout ngspice inv](/week1/images/postlayout%20inv%20ngspice.png "post layout ngspice inv")
+
+:warning: This is not correct output. figuring-out what went wrong
+## 3. Comparision of Pre-layout & Post-layout characterisation of Inverter
+
+## 4. Fn: generating GDS2 files using ALIGN
+
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <msub>
+    <mi>F</mi>
+    <mi>n</mi>
+  </msub>
+  <mo>=</mo>
+  <mover>
+    <mrow>
+      <mo stretchy="false">(</mo>
+      <mi>B</mi>
+      <mo>+</mo>
+      <mi>D</mi>
+      <mo stretchy="false">)</mo>
+      <mo>&#x22C5;</mo>
+      <mo stretchy="false">(</mo>
+      <mi>A</mi>
+      <mo>+</mo>
+      <mi>C</mi>
+      <mo stretchy="false">)</mo>
+      <mo>+</mo>
+      <mo stretchy="false">(</mo>
+      <mi>E</mi>
+      <mo>&#x22C5;</mo>
+      <mi>F</mi>
+      <mo stretchy="false">)</mo>
+    </mrow>
+    <mo accent="true">&#x2015;</mo>
+  </mover>
+</math>
+
+
+![](/week1/images/fn_xschem%20layout.png "xschem of fn")
+to generate spice file from xschem click on netlist in the right hand corner of xschem
+
+```
+** sch_path: /home/rupesh/work/fn/xschem/fn.sch
+**.subckt fn A C E F D B Y
+*.ipin A
+*.ipin C
+*.ipin E
+*.ipin F
+*.ipin D
+*.ipin B
+*.opin Y
+XM1 net1 A VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM2 net2 B VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM3 net3 C net1 VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM4 net3 D net2 VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM5 Y E net3 VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM6 Y F net3 VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM7 Y A net4 GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM8 Y B net4 GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM9 Y C net5 GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM10 net4 D GND GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM11 net4 E GND GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM12 net5 F GND GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+**.ends
+```
+
+added simulation code
+```
+** sch_path: /home/rupesh/work/fn/xschem/fn.sch
+**.subckt fn A C E F D B Y
+*.ipin A
+*.ipin C
+*.ipin E
+*.ipin F
+*.ipin D
+*.ipin B
+*.opin Y
+XM1 net1 A VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM2 net2 B VDD VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM3 net3 C net1 VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM4 net3 D net2 VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM5 Y E net3 VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM6 Y F net3 VDD sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM7 Y A net4 GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM8 Y B net4 GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM9 Y C net5 GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM10 net4 D GND GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM11 net4 E GND GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM12 net5 F GND GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+**.ends
+
+cload Y GND 10f
+
+v0 VDD GND 1.8
+
+
+V1 A 0 0 pulse 0 1.8 0.1n 10p 10p 1n 2n
+V2 B 0 0 pulse 0 1.8 0.2n 10p 10p 1n 2n
+V3 C 0 0 pulse 0 1.8 0.3n 10p 10p 1n 2n
+V4 D 0 0 pulse 0 1.8 0.4n 10p 10p 1n 2n
+V5 E 0 0 pulse 0 1.8 0.5n 10p 10p 1n 2n
+V6 F 0 0 pulse 0 1.8 0.6n 10p 10p 1n 2n
+
+
+.op
+.tran 10p 4n
+
+.lib /usr/local/share/pdk/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+
+
+.GLOBAL VDD
+.GLOBAL GND
+.end
+```
+
+![pre-layout in ngpice](/week1/images/fn_prelayout.png "pre-layout in ngpice")
+
+to convert schematic to GDS we will use ALIGN with sky130pdk. every time we use ALIGN we need to activate python environment by following 
+```
+source ~/work/ALIGN-public/general/bin/activate
+```
+
+Then use following command to run schematic2gds generation
+
+```
+schematic2layout.py ../fn -p ../pdks/ALIGN-pdk-sky130/SKY130_PDK
+```
+![gds terminal fn](/week1/images/gds%20terminal%20fn.png "gds terminal fn")
+
+## 5. Post-layout characterisation using Magic & ALIGN
+after that the gds files get generated by the name *FN_0.gds* and *FN_0.python.gds*
+
+launch magic by
+```
+magic -d OGL -T ~/work/open_pdks/sky130/sky130A/libs.tech/magic/sky130A.tech &
+```
+
+*FN_0.python.gds* can be opened using Magic or KLayout by *file>>read gds* in magic
+
+![](/week1/images/postlayout%20fn%20magic.png)
+
+This layout opens up. We need to assign labels to all the ports if labels are not preset
+
+export post layout netlist from magic by
+```
+extract all
+ext2spice cthresh 0 rthresh 0
+ext2spice
+```
+This is the netlist file exported by magic 
+```
+* SPICE3 file created from FN.ext - technology: sky130A
+
+.option scale=5000u
+
+X0 a_2380_735# a_2350_561# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=256200 pd=10460 as=256200 ps=10460 w=420 l=30
+X1 a_1004_735# a_2608_1764# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=352800 pd=14280 as=256200 ps=10460 w=420 l=30
+X2 w_774_0# a_2350_561# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X3 a_1351_1869# a_200_2073# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=256200 pd=10460 as=512400 ps=20920 w=420 l=30
+X4 a_1004_735# a_1404_3276# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=512400 ps=20920 w=420 l=30
+X5 a_921_735# a_2608_1764# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X6 a_1351_1869# a_1404_3276# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X7 a_1351_1869# a_200_2073# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X8 a_2380_735# a_2608_1764# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X9 a_1004_735# a_1404_3276# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X10 a_1004_735# a_2350_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X11 w_774_0# a_1404_3276# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X12 w_774_0# a_1404_3276# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X13 a_2380_735# a_2608_1764# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X14 a_921_735# a_2608_1764# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X15 a_1004_735# a_974_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=235200 pd=9520 as=0 ps=0 w=420 l=30
+X16 a_230_2247# a_2350_561# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X17 a_230_2247# a_1404_3276# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X18 a_147_2247# a_974_561# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=415800 pd=17100 as=0 ps=0 w=420 l=30
+X19 a_1004_735# a_1404_3276# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X20 a_921_735# a_4242_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X21 a_921_735# a_974_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X22 a_2380_735# a_974_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X23 a_1004_735# a_4242_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X24 a_921_735# a_2608_1764# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X25 a_1004_735# a_4242_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X26 a_1351_1869# a_200_2073# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X27 a_2380_735# a_2608_1764# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X28 a_1004_735# a_1404_3276# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X29 a_1004_735# a_2350_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X30 a_921_735# a_4242_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X31 a_230_2247# a_1404_3276# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X32 w_774_0# a_2350_561# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X33 a_2380_735# a_2608_1764# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X34 a_1004_735# a_2608_1764# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X35 a_2380_735# a_974_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X36 a_1351_1869# a_1404_3276# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X37 a_147_2247# a_974_561# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X38 a_2380_735# a_2608_1764# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X39 a_2380_735# a_2350_561# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X40 a_2380_735# a_974_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X41 a_230_2247# a_1404_3276# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X42 a_1004_735# a_2350_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X43 a_147_2247# a_974_561# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X44 a_2380_735# a_2350_561# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X45 a_921_735# a_974_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X46 a_921_735# a_200_2073# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X47 a_230_2247# a_1404_3276# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X48 a_2380_735# a_974_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X49 a_1004_735# a_4242_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X50 a_1004_735# a_974_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X51 a_230_2247# a_4242_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X52 a_921_735# a_4242_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X53 a_230_2247# a_2350_561# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X54 a_147_2247# a_4242_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X55 a_1004_735# a_2350_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X56 a_147_2247# a_974_561# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X57 a_2380_735# a_974_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X58 a_1351_1869# a_1404_3276# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X59 a_1351_1869# a_1404_3276# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X60 a_147_2247# a_4242_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X61 a_2380_735# a_2608_1764# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X62 a_147_2247# a_974_561# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X63 a_1004_735# a_2350_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X64 a_1004_735# a_974_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X65 a_230_2247# a_1404_3276# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X66 w_774_0# a_1404_3276# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X67 a_230_2247# a_4242_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X68 a_230_2247# a_2350_561# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X69 a_230_2247# a_200_2073# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X70 a_147_2247# a_4242_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X71 a_147_2247# a_200_2073# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X72 a_2380_735# a_2350_561# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X73 a_230_2247# a_4242_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X74 a_1004_735# a_2608_1764# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X75 a_230_2247# a_2350_561# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X76 a_230_2247# a_200_2073# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X77 w_774_0# a_2350_561# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X78 a_2380_735# a_2608_1764# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X79 w_774_0# a_2350_561# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X80 a_147_2247# a_200_2073# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X81 a_230_2247# a_4242_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X82 a_230_2247# a_2350_561# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X83 a_230_2247# a_200_2073# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X84 a_147_2247# a_4242_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X85 a_147_2247# a_200_2073# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X86 a_1004_735# a_974_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X87 a_921_735# a_4242_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X88 a_1004_735# a_2608_1764# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X89 a_921_735# a_200_2073# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X90 a_921_735# a_974_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X91 a_230_2247# a_200_2073# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X92 a_1004_735# a_1404_3276# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X93 a_1004_735# a_4242_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X94 a_147_2247# a_200_2073# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X95 w_774_0# a_1404_3276# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X96 a_921_735# a_200_2073# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X97 a_230_2247# a_4242_561# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X98 a_921_735# a_2608_1764# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X99 a_230_2247# a_200_2073# a_147_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X100 a_2380_735# a_2608_1764# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X101 a_2380_735# a_2350_561# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X102 w_774_0# a_1404_3276# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X103 a_147_2247# a_200_2073# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X104 w_774_0# a_2350_561# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X105 a_2380_735# a_2608_1764# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X106 a_1351_1869# a_200_2073# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X107 a_1004_735# a_2608_1764# a_2380_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X108 a_921_735# a_200_2073# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X109 a_1351_1869# a_1404_3276# w_774_0# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X110 a_921_735# a_974_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X111 a_147_2247# a_4242_561# a_230_2247# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X112 a_1004_735# a_974_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X113 a_921_735# a_2608_1764# a_2380_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X114 a_921_735# a_200_2073# a_1351_1869# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X115 a_2380_735# a_2608_1764# a_1004_735# a_147_2247# sky130_fd_pr__nfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X116 a_921_735# a_974_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X117 a_1351_1869# a_200_2073# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X118 a_1004_735# a_4242_561# a_921_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+X119 a_921_735# a_4242_561# a_1004_735# w_774_0# sky130_fd_pr__pfet_01v8 ad=0 pd=0 as=0 ps=0 w=420 l=30
+C0 a_1351_1869# a_2350_561# 0.07fF
+C1 a_2608_1764# a_200_2073# 0.03fF
+C2 a_2608_1764# a_2380_735# 0.99fF
+C3 a_974_561# w_774_0# 5.66fF
+C4 a_1351_1869# a_1404_3276# 0.85fF
+C5 a_2608_1764# a_1004_735# 0.73fF
+C6 a_2608_1764# a_4242_561# 0.02fF
+C7 a_2608_1764# a_921_735# 0.45fF
+C8 a_200_2073# w_774_0# 2.48fF
+C9 a_230_2247# a_2350_561# 0.63fF
+C10 a_2380_735# w_774_0# 4.92fF
+C11 a_1004_735# w_774_0# 3.38fF
+C12 a_230_2247# a_1404_3276# 0.67fF
+C13 a_4242_561# w_774_0# 1.90fF
+C14 a_921_735# w_774_0# 4.70fF
+C15 a_974_561# a_200_2073# 0.01fF
+C16 a_974_561# a_2380_735# 2.26fF
+C17 a_974_561# a_1004_735# 2.72fF
+C18 a_2380_735# a_200_2073# 0.00fF
+C19 a_974_561# a_4242_561# 0.74fF
+C20 a_974_561# a_921_735# 1.62fF
+C21 a_1004_735# a_200_2073# 0.25fF
+C22 a_2380_735# a_1004_735# 4.54fF
+C23 a_1351_1869# a_2608_1764# 0.00fF
+C24 a_921_735# a_200_2073# 0.47fF
+C25 a_2380_735# a_4242_561# 0.11fF
+C26 a_2380_735# a_921_735# 3.88fF
+C27 a_1404_3276# a_2350_561# 2.14fF
+C28 a_4242_561# a_1004_735# 0.56fF
+C29 a_921_735# a_1004_735# 8.23fF
+C30 a_1351_1869# w_774_0# 5.32fF
+C31 a_921_735# a_4242_561# 0.67fF
+C32 a_2608_1764# a_230_2247# 0.00fF
+C33 a_230_2247# w_774_0# 0.80fF
+C34 a_1351_1869# a_974_561# 0.17fF
+C35 a_1351_1869# a_200_2073# 0.47fF
+C36 a_1351_1869# a_2380_735# 0.99fF
+C37 a_974_561# a_230_2247# 0.22fF
+C38 a_1351_1869# a_1004_735# 0.40fF
+C39 a_2608_1764# a_2350_561# 0.11fF
+C40 a_1351_1869# a_4242_561# 0.00fF
+C41 a_1351_1869# a_921_735# 3.64fF
+C42 a_200_2073# a_230_2247# 0.50fF
+C43 a_2380_735# a_230_2247# 0.02fF
+C44 a_2608_1764# a_1404_3276# 0.01fF
+C45 a_1004_735# a_230_2247# 7.38fF
+C46 a_2350_561# w_774_0# 2.76fF
+C47 a_4242_561# a_230_2247# 0.45fF
+C48 a_921_735# a_230_2247# 0.00fF
+C49 a_1404_3276# w_774_0# 3.24fF
+C50 a_974_561# a_2350_561# 0.04fF
+C51 a_974_561# a_1404_3276# 0.19fF
+C52 a_200_2073# a_2350_561# 0.00fF
+C53 a_2380_735# a_2350_561# 0.65fF
+C54 a_200_2073# a_1404_3276# 0.11fF
+C55 a_1004_735# a_2350_561# 1.04fF
+C56 a_2380_735# a_1404_3276# 0.05fF
+C57 a_1004_735# a_1404_3276# 0.98fF
+C58 a_4242_561# a_2350_561# 0.08fF
+C59 a_921_735# a_2350_561# 0.38fF
+C60 a_1351_1869# a_230_2247# 0.01fF
+C61 a_4242_561# a_1404_3276# 0.00fF
+C62 a_921_735# a_1404_3276# 0.22fF
+C63 a_2608_1764# w_774_0# 2.42fF
+C64 a_2608_1764# a_974_561# 0.02fF
+C65 a_2380_735# a_147_2247# 1.46fF **FLOATING
+C66 a_2608_1764# a_147_2247# 1.10fF **FLOATING
+C67 a_4242_561# a_147_2247# 2.09fF **FLOATING
+C68 a_200_2073# a_147_2247# 1.56fF **FLOATING
+C69 a_230_2247# a_147_2247# 5.57fF **FLOATING
+C70 a_2350_561# a_147_2247# 2.32fF **FLOATING
+C71 a_1404_3276# a_147_2247# 2.27fF **FLOATING
+C72 w_774_0# a_147_2247# 26.31fF **FLOATING
+```
+:warning: this generated netlist does not seem quit right. figuring out the actual problem
+
+## 6. Comparision of Pre-layout & Post-layout characterisation of Inverter
+
