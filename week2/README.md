@@ -5,7 +5,7 @@ Contents
 Sr. No | Topic | Description | Status |
 ---|---|---|---|
 1 | OpenFASoc: Installation| installing OpenFASoc| :heavy_check_mark:|
-2 | OpenROAD: Installation  | installing OpenROAD  |  :construction: |  |
+2 | OpenROAD: Installation  | installing OpenROAD  |  :heavy_check_mark: |  |
 3 | Temperature Sensor: AUX Cells | View & study temperature sensor design using OpenFASoc & OpenROAD |  :construction:  |
 
 ## OpenFASoc: Installation
@@ -53,3 +53,45 @@ cd OpenROAD-flow-scripts
 export OPENROAD=~/OpenROAD-flow-scripts/tools/OpenROAD
 export PATH=~/OpenROAD-flow-scripts/tools/install/OpenROAD/bin:~/OpenROAD-flow-scripts/tools/install/yosys/bin:~/OpenROAD-flow-scripts/tools/install/LSOracle/bin:$PATH
 ```
+## Install Yosys
+
+Note: refer official [Yosys](https://github.com/The-OpenROAD-Project/yosys) github page for detailed installation guide.
+
+install dependencies using following commands (for Ubuntu)
+
+```
+$ sudo apt-get install build-essential clang bison flex \
+	libreadline-dev gawk tcl-dev libffi-dev git \
+	graphviz xdot pkg-config python3 libboost-system-dev \
+	libboost-python-dev libboost-filesystem-dev zlib1g-dev
+```
+installation:
+
+```
+git clone https://github.com/YosysHQ/yosys.git
+cd yosys
+make config-gcc
+
+make
+sudo make install
+
+//test installation using 
+make test
+```
+
+## Temprature Sensor Generation OpenFASoC flow:
+
+In this section we will test and try OpenFASoC flow with the help of temeprature sensor design comes with the openFASoC
+
+## GDS files:
+
+Header GDS
+
+![Header GDS](/week2/images/Header%20GDS.png)
+
+SLC GDS
+
+![SLC GDS](/week2/images/SLC%20GDS.png)
+
+## verilog generation:
+
