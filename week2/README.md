@@ -46,12 +46,15 @@ cd ~/work
 git clone --recursive https://github.com/The-OpenROAD-Project/OpenROAD.git
 cd OpenROAD
 sudo ./etc/DependencyInstaller.sh
+sudo ./etc/DependencyInstaller.sh -run
+sudo ./etc/DependencyInstaller.sh -dev
+
 cd ~/work
 git clone --recursive https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts
 cd OpenROAD-flow-scripts
 ./build_openroad.sh –local
-export OPENROAD=~/OpenROAD-flow-scripts/tools/OpenROAD
-export PATH=~/OpenROAD-flow-scripts/tools/install/OpenROAD/bin:~/OpenROAD-flow-scripts/tools/install/yosys/bin:~/OpenROAD-flow-scripts/tools/install/LSOracle/bin:$PATH
+export OPENROAD=~/work/OpenROAD-flow-scripts/tools/OpenROAD
+export PATH=~/work/OpenROAD-flow-scripts/tools/install/OpenROAD/bin:~/work/OpenROAD-flow-scripts/tools/install/yosys/bin:~/work/OpenROAD-flow-scripts/tools/install/LSOracle/bin:$PATH
 ```
 ## Install Yosys
 
@@ -95,3 +98,42 @@ SLC GDS
 
 ## verilog generation:
 
+![Verilog gen](/week2/images/temp-sense-gen-verilog.png)
+
+![Verilog gen](/week2/images/temp-sense-gen-verilog2.png)
+
+## synthesis
+
+## floorplan
+
+![floorplan](/week2/images/temp-sense-gen-floorplan.png)
+
+
+## Placement
+
+Global placement
+![Global placement](/week2/images/temp-sense-gen-global-place-report.png)
+
+detailed placement
+![detailed placement](/week2/images/temp-sense-gen-detailed-placement-report.png)
+
+## Routing
+
+Global Routing
+![Global Routing](/week2/images/temp-sense-gen-global-route-report.png)
+
+## Final GDS layout
+
+finished-report
+![finished-report](/week2/images/temp-sense-gen-finished-report.png)
+
+Final GDS Layout
+![Final GDS Layout](/week2/images/temp-sense-gen-final-gds-layout.png)
+
+## Post-layout verification
+
+DRC Check
+![DRC](/week2/images/temp-sense-gen-DRC.png)
+
+Layout Vs Schematic Check
+![LVS](/week2/images/temp-sense-gen-LVS.png)
